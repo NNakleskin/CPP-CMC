@@ -2,71 +2,44 @@
 #include <iomanip>
 
 
-class dot {
-public:
+const static double eps = 0.0001;
+
+
+struct Dot{
     double x, y;
-    dot (double a, double b) {
-        x = a;
-        y = b;
+    Dot(double x, double y) : x(x), y(y) {}
+};
+
+struct Line {
+    double a, b, c;
+    Line(Dot first, Dot second) {
+        a = (second.y - first.y);
+        b = -(second.x - first.x);
+        c = -(second.y - first.y) * first.x + (second.x - first.x) * first.y;
     }
 };
 
 
-class line {
-public:
-    dot first;
-    dot second;
-    line (double a, double b, double c, double d): first (a, b), second (c, d) {}
-};
-
-
-void get_cross (line a, line b) {
-    double n = 0;
-    if (abs ((-a.first.x) / (a.second.x - a.first.x) - (-a.first.y) / (a.second.y - a.first.y) -
-        (-b.first.x) / (b.second.x - b.first.x) + (-b.first.y) / (b.second.y - b.first.y)) < 0.01 &&
-        abs (((5 - a.first.x) / (a.second.x - a.first.x) - (5 - a.first.y) / (a.second.y - a.first.y)) -
-            (5 - b.first.x) / (b.second.x - b.first.x) + (5 - b.first.y) / (b.second.y - b.first.y)) < 0.01) {
-        std::cout << 2 << std::endl;
-        return;
-    }
-    if (a.second.y - a.first.y != 0) {
-        double q = (a.second.x - a.first.x) / (a.first.y - a.second.y);
-        double sn = (b.first.x - b.second.x) + (b.first.y - b.second.y) * q;
-        if (!sn) {
+void get_cross(Line first, Line second) {
+    double det = first.a * second.b - second.a * first.b;
+    if(std::abs(det) < eps) {
+        if(std::abs(first.a * second.c - first.c * second.a) < eps && std::abs(first.b * second.c - first.c * second.b) < eps) {
+            std::cout << 2 << std::endl;
+        } else {
             std::cout << 0 << std::endl;
-            return;
         }
-        double fn = (b.first.x - a.first.x) + (b.first.y - a.first.y) * q;
-        n = fn / sn;
     } else {
-        if (!(b.first.y - b.second.y)) {
-            std::cout << 0 << std::endl;
-            return;
-        }
-        n = (b.first.y - a.first.y) / (b.first.y - b.second.y);
+        double x, y;
+        x = - (first.c * second.b - second.c * first.b) / det;
+        y = -(first.a * second.c - second.a * first.c) / det;
+        std::cout << 1 << " " << std::fixed << std::setprecision (5) << x << " " << y << std::endl;
     }
-    std::cout << 1 << std::endl;
-    std::cout << std::setprecision (6) << b.first.x + (b.second.x - b.first.x) * n << std::endl;
-    std::cout << std::setprecision (6) << b.first.y + (b.second.y - b.first.y) * n << std::endl;
 }
+
 
 
 int main () {
     double x1, x2, x3, x4, y1, y2, y3, y4;
     std::cin >> x1 >> y1 >> x2 >> y2 >> x3 >> y3 >> x4 >> y4;
-    get_cross (line (x1, y1, x2, y2), line (x3, y3, x4, y4));
+    get_cross (Line (Dot(x1, y1), Dot(x2, y2)), Line (Dot(x3, y3), Dot(x4, y4)));
 }
-/*
-0
-0
-0
-5
-0
-0
-0
-10
-
-0
-
-Bad test
-*/
