@@ -1,113 +1,92 @@
-#include <iostream>
-#include <iomanip>
+/*
+В пространстве имен numbers реализуйте класс complex для комплексных чисел над типом double. Класс должен определять:
+
+Конструкторы по умолчанию, от одного и двух аргументов. Должен реализовываться одним конструктором.
+Явный (explicit) конструктор из типа std::string, который преобразовывает строку в значение complex. Строка имеет формат (RE,IM), то есть вещественная и мнимая части (числа типа double) записываются через запятую в круглых скобках. Например, строка "(1.0,-5)" определяет комплексное число (1.0,-5.0). Проверка на ошибки не требуется.
+Методы re и im для получения вещественной и мнимой части числа.
+Метод abs2 для получения квадрата модуля числа.
+Метод abs для получения модуля числа.
+Метод to_string, который преобразовывает комплексное число в строковое представление (см. выше) и возвращает объект типа std::string. Вещественные числа выводятся с 10 значащими цифрами в формате %.10g.
+Операции +=, -=, *=, /=.
+Операции сложения, вычитания, умножения и деления в обычной инфиксной форме, которые должны быть определены через соответствующие операции присваивания.
+Префиксную операцию ~, которая возвращает новое число, комплексно-сопряженное к аргументу.
+Префиксную операцию - смены знака.
+*/
+
+
+#include <string>
 #include <cmath>
 
 namespace numbers {
     class complex {
-    private:
-        double _re, _im;
     public:
-
         complex (double a, double b) {
-            _re = a;
-            _im = b;
+            re_ = a;
+            im_ = b;
         }
 
 
         complex (double a) {
-            _re = a;
-            _im = 0;
+            re_ = a;
+            im_ = 0;
         }
 
-        complex (): _re (0), _im (0) {}
+        complex (): re_ (0), im_ (0) {}
 
         explicit complex (const char* string) {
-            sscanf (string, "(%lf,%lf)", &re, &im);
+            sscanf (string, "(%lf,%lf)", &re_, &im_);
         }
 
-
-        double _re () const {
-            return this->_re;
-        }
-
-        double _im () const {
-            return this->_im;
-        }
-
-        double abs2 () const {
-            return _re * _re + _im * im;
-        }
-
-        double abs () {
-            return sqrt (this->abs2 ());
-        }
+        double re () const { return re_; }
+        double im () const { return im_; }
+        double abs2 () const { return re_ * re_ + im_ * im_; }
+        double abs () const { return sqrt (abs2 ()); }
 
         char* to_string () const {
             char* buf;
-            asprintf (&buf, "(%.10g,%.10g)", re, im);
+            asprintf (&buf, "(%.10g,%.10g)", re_, im_);
             return buf;
         }
 
-        complex& operator+= (const complex& b) {
-            this->_re = this->_re + b.re;
-            this->_im = this->_im + b.im;
+        complex& operator+=(const complex& other) {
+            re_ += other.re_;
+            im_ += other.im_;
             return *this;
         }
 
-        complex& operator*= (const complex& b) {
-            this->_re = this->_re * b._re - this->_im * b.im;
-            this->_im = this->_re * b._im + this->_im * b.re;
+        complex& operator-=(const complex& other) {
+            re_ -= other.re_;
+            im_ -= other.im_;
             return *this;
         }
 
-        complex& operator- (const complex& b) {
-            this->_re = this->_re - b.re;
-            this->_im = this->_im - b.im;
+        complex& operator*=(const complex& other) {
+            double re = re_ * other.re_ - im_ * other.im_;
+            double im = re_ * other.im_ + im_ * other.re_;
+            re_ = re;
+            im_ = im;
             return *this;
         }
 
-        complex& operator/= (const complex& b) {
-            this->_re = (this->_re * b._re + this->_im * b.im) / (b._re * b._re + b._im * b.im);
-            this->_im = (b._re * this->_im - b._im * this->re) / (b._re * b._re + b._im * b.im);
+        complex& operator/=(const complex& other) {
+            double denom = other.re_ * other.re_ + other.im_ * other.im_;
+            double re = (re_ * other.re_ + im_ * other.im_) / denom;
+            double im = (im_ * other.re_ - re_ * other.im_) / denom;
+            re_ = re;
+            im_ = im;
             return *this;
         }
 
-        friend const complex operator+ (const complex& a, const complex& b) {
-            return complex (a._re + b.re, a._im + b.im);
-        }
+        friend complex operator+(const complex& x, const complex& y) { return complex (x) += y; }
+        friend complex operator-(const complex& x, const complex& y) { return complex (x) -= y; }
+        friend complex operator*(const complex& x, const complex& y) { return complex (x) *= y; }
+        friend complex operator/(const complex& x, const complex& y) { return complex (x) /= y; }
 
-        friend const complex operator* (const complex& a, const complex& b) {
-            return complex (a._re * b._re - a._im * b.im, a._re * b._im + a._im * b.re);
-        }
+        complex operator~() const { return complex (re_, -im_); }
 
-        friend const complex operator- (const complex& a, const complex& b) {
-            return complex (a._re - b.re, a._im - b.im);
-        }
+        friend complex operator-(const complex& x) { return complex (-x.re_, -x.im_); }
 
-        friend const complex operator/ (const complex& a, const complex& b) {
-            return complex ((a._re * b._re + a._im * b.im) / (b._re * b._re + b._im * b.im), (b._re * a._im - b._im * a.re) / (b._re * b._re + b._im * b.im));
-        }
-
-        const complex operator~ () const {
-            return complex (re, -im);
-        }
-
-        const complex operator- () const {
-            return complex (-re, -im);
-        }
+    private:
+        double re_, im_;
     };
-};
-
-
-int main () {
-    numbers::complex res = numbers::complex (10.12, 12.32);
-    numbers::complex res2 = numbers::complex (10.12, 12.32);
-
-    res += ~res2;
-
-    char* buf = nullptr;
-    res.to_string (&buf);
-    std::cout << buf << std::endl;
-
-    std::cout << res._re () << std::endl;
 }
