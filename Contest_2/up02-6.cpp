@@ -34,7 +34,6 @@ public:
         return str_->substr (begin_ + begin, count);
     }
 
-    // итераторы произвольного доступа
     const char* begin () const { return &(*str_)[begin_]; }
     const char* end () const { return &(*str_)[end_]; }
 
